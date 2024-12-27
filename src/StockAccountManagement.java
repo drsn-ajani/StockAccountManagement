@@ -28,6 +28,10 @@ class Stock {
         return numberOfShares * sharePrice;
     }
 
+    public void reduceShares(int sharesToReduce) {
+        this.numberOfShares -= sharesToReduce;
+    }
+
 }
 
 class StockPortfolio {
@@ -47,6 +51,27 @@ class StockPortfolio {
             totalValue += stock.calculateStockValue();
         }
         return totalValue;
+    }
+
+    public void debit(double amount) {
+        double totalValue = calculateTotalValue();
+        if (amount > totalValue) {
+            System.out.println("Debit amount exceeded account balance!");
+        } else {
+            double remainingAmount = amount;
+            for (Stock stock : stocks) {
+                if (remainingAmount <= 0) break;
+
+                double stockValue = stock.calculateStockValue();
+                if (stockValue > 0) {
+                    double sharePrice = stock.getSharePrice();
+                    int sharesToReduce = (int) Math.min(remainingAmount / sharePrice, stock.getNumberOfShares());
+                    stock.reduceShares(sharesToReduce);
+                    remainingAmount -= sharesToReduce * sharePrice;
+                }
+            }
+            System.out.println("Debit operation successful. Remaining debit amount: " + remainingAmount);
+        }
     }
 
     public void printStockReport() {
@@ -85,6 +110,13 @@ public class StockAccountManagement {
         }
 
         portfolio.printStockReport();
+
+        System.out.println("\nEnter amount to debit: ");
+        double debitAmount = sc.nextDouble();
+        portfolio.debit(debitAmount);
+
+        portfolio.printStockReport();
+
         sc.close();
     }
 }
